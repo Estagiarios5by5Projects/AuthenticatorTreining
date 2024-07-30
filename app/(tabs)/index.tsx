@@ -29,14 +29,22 @@ export default function HomeScreen() {
       const response = await fetch(`https://localhost:7067/auth/callback?code=${token}`, {
         method: 'GET',
       });
-      console.log(token);
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Data received from backend:", data);
-        setMessage('Token enviado com sucesso!');
+  
+      const responseText = await response.text();
+  
+      if (response.ok) {      
+          try {
+            const data = JSON.parse(responseText);
+            console.log("Data received from backend:", data);
+            setMessage('Token enviado com sucesso!');
+          } catch (error) {
+            console.error("Failed to parse JSON:", responseText);
+            setMessage('Falha ao processar a resposta do backend');
+        }
       } else {
-        console.error("Failed to send token to backend", response.toString());
-        setMessage('Falha ao enviar token para o backend');
+        // Se a resposta não for bem-sucedida, exibe a mensagem de erro
+        console.error('Failed to send token to backend:', responseText);
+        setMessage(`Falha ao enviar token para o backend`);
       }
     } catch (error) {
       console.error('Error:', error);
