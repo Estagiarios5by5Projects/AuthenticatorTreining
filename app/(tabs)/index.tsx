@@ -16,7 +16,7 @@ export default function HomeScreen() {
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: process.env.GOOGLE_CLIENT_ID,
-    redirectUri: process.env.REDIRECT_URI
+    redirectUri: "http://localhost:8081"
   });
 
   const callAuthGoogle = () => {
@@ -26,20 +26,16 @@ export default function HomeScreen() {
 
   const sendTokenToBackend = async (token: string) => {
     try {
-      const response = await fetch('https://localhost:7067/auth/token', {
+      const response = await fetch(`https://localhost:7067/auth/callback?code=${token}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accessToken: token }),
       });
-  
+      console.log(token);
       if (response.ok) {
         const data = await response.json();
         console.log("Data received from backend:", data);
         setMessage('Token enviado com sucesso!');
       } else {
-        console.error('Failed to send token to backend');
+        console.error("Failed to send token to backend", response.toString());
         setMessage('Falha ao enviar token para o backend');
       }
     } catch (error) {
