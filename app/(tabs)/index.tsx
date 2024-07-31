@@ -26,23 +26,27 @@ export default function HomeScreen() {
 
   const sendTokenToBackend = async (token: string) => {
     try {
-      const response = await fetch(`https://localhost:7067/auth/callback?code=${token}`, {
+      const response = await fetch(`https://localhost:7067/validate-token?accessToken=${token}`, {
         method: 'GET',
       });
   
-      const responseText = await response.text();
-  
+      const status = response.status; // Pega o status HTTP
+      const statusText = response.statusText; // Pega a mensagem de status
+      const responseBody = await response.text(); // Pega o corpo da resposta como texto
+      
+      const responseText = `${status} ${responseBody} ${statusText}`;  
+
       if (response.ok) {      
           try {
             const data = JSON.parse(responseText);
             console.log("Data received from backend:", data);
-            setMessage('Token enviado com sucesso!');
+            setMessage(`${responseText}`);
           } catch (error) {
-            console.error("Failed to parse JSON:", responseText);
-            setMessage('Falha ao processar a resposta do backend');
+            console.error('Failed to send token to backend:', responseText);
+            setMessage(`${responseText}`);
         }
       } else {
-        // Se a resposta não for bem-sucedida, exibe a mensagem de erro
+ 
         console.error('Failed to send token to backend:', responseText);
         setMessage(`Falha ao enviar token para o backend`);
       }
