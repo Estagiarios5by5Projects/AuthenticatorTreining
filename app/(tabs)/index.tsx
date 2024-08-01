@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Button, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
- 
+
 WebBrowser.maybeCompleteAuthSession();
 
 export default function HomeScreen() {
@@ -13,6 +13,7 @@ export default function HomeScreen() {
   } | null>(null);
 
   const [message, setMessage] = useState<string | null>(null);
+  const [messageColor, setMessageColor] = useState<string>('black'); // Estado para armazenar a cor da mensagem
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -29,30 +30,33 @@ export default function HomeScreen() {
       const response = await fetch(`https://localhost:7067/validate-token?accessToken=${token}`, {
         method: 'GET',
       });
-  
-      const status = response.status; // Pega o status HTTP
-      const statusText = response.statusText; // Pega a mensagem de status
-      const responseBody = await response.text(); // Pega o corpo da resposta como texto
-      
-      const responseText = `${status} ${responseBody} ${statusText}`;  
 
-      if (response.ok) {      
-          try {
-            const data = JSON.parse(responseText);
-            console.log("Data received from backend:", data);
-            setMessage(`${responseText}`);
-          } catch (error) {
-            console.error('Failed to send token to backend:', responseText);
-            setMessage(`${responseText}`);
+      const status = response.status;
+      const statusText = response.statusText;
+      const responseBody = await response.text();
+
+      const responseText = `${status} ${responseBody} ${statusText}`;
+
+      if (response.ok) {
+        try {
+          const data = JSON.parse(responseText);
+          console.log("Data received from backend:", data);
+          setMessage(responseText);
+          setMessageColor('green'); 
+        } catch (error) {
+          console.error('Failed to parse response:', responseText);
+          setMessage(responseText);
+          setMessageColor('green');  
         }
       } else {
- 
         console.error('Failed to send token to backend:', responseText);
-        setMessage(`Falha ao enviar token para o backend`);
+        setMessage('Falha ao enviar token para o backend');
+        setMessageColor('yellow');  
       }
     } catch (error) {
       console.error('Error:', error);
       setMessage('Erro ao enviar token para o backend');
+      setMessageColor('red');  
     }
   };
 
@@ -63,9 +67,11 @@ export default function HomeScreen() {
         case 'error':
           console.log("An error occurred");
           console.log(response);
+          setMessageColor('red');
           break;
         case 'cancel':
           console.log("Authentication was canceled");
+          setMessageColor('yellow');
           break;
         case 'success':
           console.log("Authentication succeeded");
@@ -82,7 +88,7 @@ export default function HomeScreen() {
               name: userLogin.name,
               picture: userLogin.picture,
             });
-  
+
             // Enviar token ao backend
             await sendTokenToBackend(response.authentication?.accessToken || '');
           } catch (e) {
@@ -94,7 +100,7 @@ export default function HomeScreen() {
       }
     }
   };
-  
+
   useEffect(() => {
     console.log('useEffect foi chamada');
     getResponse();
@@ -115,7 +121,7 @@ export default function HomeScreen() {
             <Text style={styles.buttonText}>Sair</Text>
           </TouchableOpacity>
           {message && (
-            <Text style={styles.message}>{message}</Text>
+            <Text style={[styles.message, { color: messageColor }]}>{message}</Text>
           )}
         </View>
       ) : (
@@ -171,6 +177,5 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 20,
     fontSize: 40,
-    color: 'red', // ou outra cor de sua escolha
   },
 });
