@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, StatusBar, ScrollView } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 
@@ -12,8 +12,11 @@ export default function HomeScreen() {
     picture: string;
   } | null>(null);
 
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageColor, setMessageColor] = useState<string>('black'); // Estado para armazenar a cor da mensagem
+  const [tokenMessage, setTokenMessage] = useState<string | null>(null);
+  const [tokenMessageColor, setTokenMessageColor] = useState<string>('black'); 
+
+  const [userMessage, setUserMessage] = useState<string | null>(null);
+  const [userMessageColor, setUserMessageColor] = useState<string>('black'); 
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -41,22 +44,48 @@ export default function HomeScreen() {
         try {
           const data = JSON.parse(responseText);
           console.log("Data received from backend:", data);
-          setMessage(responseText);
-          setMessageColor('green'); 
+          setTokenMessage(responseText);
+          setTokenMessageColor('green'); 
         } catch (error) {
           console.error('Failed to parse response:', responseText);
-          setMessage(responseText);
-          setMessageColor('green');  
+          setTokenMessage(responseText);
+          setTokenMessageColor('green');  
         }
       } else {
         console.error('Failed to send token to backend:', responseText);
-        setMessage('Falha ao enviar token para o backend');
-        setMessageColor('yellow');  
+        setTokenMessage('Falha ao enviar token para o backend');
+        setTokenMessageColor('yellow');  
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessage('Erro ao enviar token para o backend');
-      setMessageColor('red');  
+      setTokenMessage('Erro ao enviar token para o backend');
+      setTokenMessageColor('red');  
+    }
+  };
+
+  const sendUserInfoToBackend = async (name: string, email: string) => {
+    try {
+      const response = await fetch('https://localhost:7067/api/User', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email }),
+      });
+
+      if (response.ok) {
+        console.log("User info sent to backend successfully");
+        setUserMessage('Informações do usuário enviadas com sucesso!');
+        setUserMessageColor('green');
+      } else {
+        console.error('Failed to send user info to backend');
+        setUserMessage('Falha ao enviar informações do usuário');
+        setUserMessageColor('yellow');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUserMessage('Erro ao enviar informações do usuário');
+      setUserMessageColor('red');
     }
   };
 
@@ -66,12 +95,13 @@ export default function HomeScreen() {
       switch (response.type) {
         case 'error':
           console.log("An error occurred");
-          console.log(response);
-          setMessageColor('red');
+          setTokenMessage('An error occurred during authentication');
+          setTokenMessageColor('red');
           break;
         case 'cancel':
           console.log("Authentication was canceled");
-          setMessageColor('yellow');
+          setTokenMessage('Authentication was canceled');
+          setTokenMessageColor('yellow');
           break;
         case 'success':
           console.log("Authentication succeeded");
@@ -91,8 +121,14 @@ export default function HomeScreen() {
 
             // Enviar token ao backend
             await sendTokenToBackend(response.authentication?.accessToken || '');
+
+            // Enviar informações do usuário ao backend
+            await sendUserInfoToBackend(userLogin.name, userLogin.email);
+
           } catch (e) {
             console.warn('ERROR', e);
+            setTokenMessage('Failed to fetch user data');
+            setTokenMessageColor('red');
           }
           break;
         default:
@@ -120,9 +156,14 @@ export default function HomeScreen() {
           <TouchableOpacity style={styles.button} onPress={() => setUser(null)}>
             <Text style={styles.buttonText}>Sair</Text>
           </TouchableOpacity>
-          {message && (
-            <Text style={[styles.message, { color: messageColor }]}>{message}</Text>
-          )}
+          <ScrollView style={styles.messageContainer}>
+            {tokenMessage && (
+              <Text style={[styles.message, { color: tokenMessageColor }]}>{tokenMessage}</Text>
+            )}
+            {userMessage && (
+              <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
+            )}
+          </ScrollView>
         </View>
       ) : (
         <View style={styles.container}>
@@ -143,39 +184,42 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000', 
+    backgroundColor: '#000000',
   },
   userInfo: {
     alignItems: 'center',
   },
   titulo: {
-    fontSize: 24, 
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 40, 
+    marginBottom: 40,
     textAlign: 'center',
-    color: '#ffffff', 
+    color: '#ffffff',
   },
   loginText: {
-    fontSize: 20, 
+    fontSize: 20,
     marginBottom: 30,
-    color: '#ffffff', 
+    color: '#ffffff',
   },
   button: {
-    backgroundColor: '#1E90FF', 
+    backgroundColor: '#1E90FF',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
   },
   buttonText: {
-    color: '#ffffff', 
+    color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
   },
   userImage: {
     borderRadius: 40,
   },
-  message: {
+  messageContainer: {
     marginTop: 20,
-    fontSize: 40,
+  },
+  message: {
+    fontSize: 16,
+    marginVertical: 5,
   },
 });
