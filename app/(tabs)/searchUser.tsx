@@ -3,11 +3,31 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 
 const ProfileScreen = () => {
   const [userId, setUserId] = useState('');
+  const [userMessage, setUserMessage] = useState('');
+  const [userMessageColor, setUserMessageColor] = useState('black');
 
-  const handleSearch = () => {
-    // Lógica para procurar dados do usuário por ID
-    console.log('Procurar usuário com ID:', userId);
-  };
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(`https://localhost:7067/api/User/UserID/${userId}`, {
+        method: 'GET',
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log("User info received from backend:", data);
+        setUserMessage('Informações do usuário recebidas com sucesso!');
+        setUserMessageColor('green');
+      } else {
+        console.error('Failed to retrieve user info from backend');
+        setUserMessage('Falha ao recuperar informações do usuário');
+        setUserMessageColor('yellow');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setUserMessage('Erro ao recuperar informações do usuário');
+      setUserMessageColor('red');
+    }
+  };  
 
   return (
     <View style={styles.container}>
@@ -25,6 +45,9 @@ const ProfileScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleSearch}>
         <Text style={styles.buttonText}>Pesquisar</Text>
       </TouchableOpacity>
+      {userMessage && (
+        <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
+      )}
     </View>
   );
 };
@@ -46,7 +69,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     width: '20%', 
     marginBottom: 20,
-    alignItems: 'center', 
+    alignItems: 'center',
   },
   input: {
     height: 40,
@@ -57,7 +80,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#ffffff',
     color: '#000000',
-    fontSize: 20,
+    fontSize: 16, 
   },
   button: {
     backgroundColor: '#1E90FF',
@@ -69,6 +92,10 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  message: {
+    marginTop: 20,
+    fontSize: 16,
   },
 });
 
