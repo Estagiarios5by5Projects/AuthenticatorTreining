@@ -15,7 +15,6 @@ export default function HomeScreen() {
     picture: string;
   } | null>(null);
 
-  
   const [tokenMessage, setTokenMessage] = useState<string | null>(null);
   const [tokenMessageColor, setTokenMessageColor] = useState<string>('black'); 
 
@@ -228,8 +227,8 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
       ) : (
-        <View style={styles.container}>
-          <Text style={styles.titulo}>TESTE PARA AUTENTICAÇÃO OAUTH2 GOOGLE</Text>
+        <View style={styles.loginContainer}>
+          <Text style={styles.titulo}>Teste para autenticação Oauth2 Google</Text>
           <Text style={styles.loginText}>Login com Google</Text>
           <TouchableOpacity style={styles.button} onPress={callAuthGoogle}>
             <Text style={styles.buttonText}>Entrar</Text>
@@ -246,36 +245,46 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: '#121212',
   },
   userInfo: {
     alignItems: 'center',
   },
+  loginContainer: {
+    alignItems: 'center',
+  },
   titulo: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 40,
     textAlign: 'center',
     color: '#ffffff',
-  },
+    fontFamily: 'Roboto-Regular',
+  }, 
   loginText: {
     fontSize: 20,
     marginBottom: 30,
-    color: '#ffffff',
+    color: '#b0bec5',
   },
   button: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    backgroundColor: '#03a9f4',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   userImage: {
-    borderRadius: 40,
+    borderRadius: 35,
+    marginBottom: 20,
   },
   messageContainer: {
     marginTop: 20,
