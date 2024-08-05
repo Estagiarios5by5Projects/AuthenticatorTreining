@@ -22,6 +22,9 @@ export default function HomeScreen() {
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [userMessageColor, setUserMessageColor] = useState<string>('black'); 
 
+  const [tokenRedisMenssage, setTokenRedisMessage] = useState<string | null>(null);
+  const [tokenRedisMessageColor, setTokenRedisCollor] = useState<string>('black'); 
+
   const generateAutoIncrementId = () => {
     currentId += 1;
     return currentId.toString();
@@ -108,6 +111,38 @@ export default function HomeScreen() {
     }
   };  
 
+  const sendTokenToRedis = async (IdUserToken: string, AccessTokenGoogle: string, 
+    RefreshTokenGoogle: string, AccessTokenGoogleExpiresIn: string) => {
+    try {
+      const response = await fetch(`${stringURL}insert-token-redis?IdUserToken=${IdUserToken}&AccessTokenGoogle=${AccessTokenGoogle}
+        &RefreshTokenGoogle=${RefreshTokenGoogle}&AccessTokenGoogleExpiresIn=${AccessTokenGoogleExpiresIn}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      const status = response.status;
+      const statusText = response.statusText;
+      const responseBody = await response.text();
+      const responseText = `${status} ${statusText}: ${responseBody}`;
+  
+      if (response.ok) {
+        console.log("Token info sent to Redis successfully");
+        setTokenRedisMessage('Token do usuário enviadas com sucesso ao Redis!');
+        setTokenRedisCollor('green');
+      } else {
+        console.error('Failed to send user token to Redis:', responseText);
+        setTokenRedisMessage(`Falha ao enviar token do usuário ao Redis`);
+        setTokenRedisCollor('yellow');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setTokenRedisMessage('Erro ao enviar informações do usuário');
+      setTokenRedisCollor('red');
+    }
+  };  
+
   const getResponse = async () => {
     if (response) {
       console.log("Response received:", response);
@@ -146,6 +181,9 @@ export default function HomeScreen() {
 
             await sendUserInfoToBackend(userId, userLogin.name, userLogin.email, userLogin.picture);
 
+            await sendTokenToRedis(process.env.GOOGLE_CLIENT_ID?.toString() || '', response.authentication?.accessToken || '', 
+              response.authentication?.refreshToken || '', response.authentication?.expiresIn?.toString() || '');
+          
           } catch (e) {
             console.warn('ERROR', e);
             setTokenMessage('Failed to fetch user data');
@@ -183,6 +221,9 @@ export default function HomeScreen() {
             )}
             {userMessage && (
               <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
+            )}
+            {tokenRedisMenssage && (
+              <Text style={[styles.message, {color: tokenRedisMessageColor}]}>{tokenRedisMenssage}</Text>
             )}
           </ScrollView>
         </View>
