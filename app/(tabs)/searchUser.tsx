@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen = () => {
   const [userId, setUserId] = useState('');
@@ -30,7 +31,13 @@ const ProfileScreen = () => {
   };  
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#e96443', '#904e95', '#227da1']}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
+      locations={[0.2, 0.5, 0.9]}
+      style={styles.container}
+    >
       <Text style={styles.text}>Procurar dados de usuário por ID</Text>
       <View style={styles.inputContainer}>
         <TextInput
@@ -48,7 +55,7 @@ const ProfileScreen = () => {
       {userMessage && (
         <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
       )}
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -57,30 +64,32 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000000',
+    backgroundColor: '#121212', 
     padding: 16,
   },
   text: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: '#ffffff', 
     marginBottom: 20,
+    fontFamily: 'Roboto-Regular', 
   },
   inputContainer: {
-    width: '20%', 
+    width: '80%', 
     marginBottom: 20,
     alignItems: 'center',
   },
   input: {
     height: 40,
     width: '100%',
-    borderColor: '#ffffff',
+    borderColor: '#333333', 
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     backgroundColor: '#ffffff',
     color: '#000000',
     fontSize: 16, 
+    fontFamily: 'Roboto-Regular', 
   },
   button: {
     backgroundColor: '#1E90FF',
@@ -92,10 +101,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+    fontFamily: 'Roboto-Regular', 
   },
   message: {
     marginTop: 20,
     fontSize: 16,
+    fontFamily: 'Roboto-Regular', 
   },
 });
 
