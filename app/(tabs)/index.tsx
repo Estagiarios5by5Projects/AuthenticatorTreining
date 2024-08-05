@@ -4,6 +4,9 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 
 WebBrowser.maybeCompleteAuthSession();
+let currentId = 0;  // Variável global para simular ID auto-incremental
+
+let stringURL = "https://localhost:7067/";
 
 export default function HomeScreen() {
   const [user, setUser] = useState<{
@@ -12,11 +15,17 @@ export default function HomeScreen() {
     picture: string;
   } | null>(null);
 
+  
   const [tokenMessage, setTokenMessage] = useState<string | null>(null);
   const [tokenMessageColor, setTokenMessageColor] = useState<string>('black'); 
 
   const [userMessage, setUserMessage] = useState<string | null>(null);
   const [userMessageColor, setUserMessageColor] = useState<string>('black'); 
+
+  const generateAutoIncrementId = () => {
+    currentId += 1;
+    return currentId.toString();
+  };
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId: process.env.GOOGLE_CLIENT_ID,
@@ -30,9 +39,9 @@ export default function HomeScreen() {
 
   const sendTokenToBackend = async (token: string) => {
     try {
-      const response = await fetch(`https://localhost:7067/validate-token?accessToken=${token}`, {
+      const response = await fetch(`${stringURL}validate-token?accessToken=${token}`, {
         method: 'GET',
-      });
+      })
 
       const status = response.status;
       const statusText = response.statusText;
@@ -63,23 +72,33 @@ export default function HomeScreen() {
     }
   };
 
-  const sendUserInfoToBackend = async (name: string, email: string) => {
+  const sendUserInfoToBackend = async (id: string, name: string, email: string, picture: string) => {
     try {
-      const response = await fetch('https://localhost:7067/api/User', {
+      const response = await fetch(`${stringURL}api/User/insert-user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({
+          IdUser: id,
+          name,
+          email,
+          ProfileImageUrl: picture,
+        }),
       });
-
+  
+      const status = response.status;
+      const statusText = response.statusText;
+      const responseBody = await response.text();
+      const responseText = `${status} ${statusText}: ${responseBody}`;
+  
       if (response.ok) {
         console.log("User info sent to backend successfully");
         setUserMessage('Informações do usuário enviadas com sucesso!');
         setUserMessageColor('green');
       } else {
-        console.error('Failed to send user info to backend');
-        setUserMessage('Falha ao enviar informações do usuário');
+        console.error('Failed to send user info to backend:', responseText);
+        setUserMessage(`Falha ao enviar informações do usuário`);
         setUserMessageColor('yellow');
       }
     } catch (error) {
@@ -87,7 +106,7 @@ export default function HomeScreen() {
       setUserMessage('Erro ao enviar informações do usuário');
       setUserMessageColor('red');
     }
-  };
+  };  
 
   const getResponse = async () => {
     if (response) {
@@ -121,9 +140,11 @@ export default function HomeScreen() {
 
             // Enviar token ao backend
             await sendTokenToBackend(response.authentication?.accessToken || '');
+            
 
-            // Enviar informações do usuário ao backend
-            await sendUserInfoToBackend(userLogin.name, userLogin.email);
+            const userId = generateAutoIncrementId();
+
+            await sendUserInfoToBackend(userId, userLogin.name, userLogin.email, userLogin.picture);
 
           } catch (e) {
             console.warn('ERROR', e);
