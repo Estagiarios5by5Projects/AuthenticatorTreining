@@ -40,38 +40,30 @@
       promptAsync();
     };
 
-    const sendTokenToBackend = async (token: string) => {
+    const sendTokenToBackend = async (token: string): Promise<boolean> => {
       try {
         const response = await fetch(`${stringURL}validate-token?accessToken=${token}`, {
           method: 'GET',
-        })
-
+        });
+    
         const status = response.status;
-        const statusText = response.statusText;
         const responseBody = await response.text();
-
-        const responseText = `${status} ${responseBody} ${statusText}`;
-
+    
         if (response.ok) {
-          try {
-            const data = JSON.parse(responseText);
-            console.log("Data received from backend:", data);
-            setTokenMessage(responseText);
-            setTokenMessageColor('green'); 
-          } catch (error) {
-            console.error('Failed to parse response:', responseText);
-            setTokenMessage(responseText);
-            setTokenMessageColor('green');  
-          }
+            setTokenMessage('Token validado com sucesso');
+            setTokenMessageColor('green');
+            return true;
         } else {
-          console.error('Failed to send token to backend:', responseText);
-          setTokenMessage('Falha ao enviar token para o backend');
-          setTokenMessageColor('yellow');  
+          console.error('Failed to send token to backend:', responseBody);
+          setTokenMessage('Falha ao validar o token com o backend');
+          setTokenMessageColor('red');
+          return false;
         }
       } catch (error) {
         console.error('Error:', error);
-        setTokenMessage('Erro ao enviar token para o backend');
-        setTokenMessageColor('red');  
+        setTokenMessage('Erro ao validar o token com o backend');
+        setTokenMessageColor('red');
+        return false;
       }
     };
 
@@ -172,16 +164,20 @@
                 name: userLogin.name,
                 picture: userLogin.picture,
               });
-
-              await sendTokenToBackend(response.authentication?.accessToken || '');
-              
-              const userId = generateAutoIncrementId();
-
-              await sendUserInfoToBackend(userId, userLogin.name, userLogin.email, userLogin.picture);
-
-              await sendTokenToRedis(process.env.GOOGLE_CLIENT_ID?.toString() || '', response.authentication?.accessToken || '', 
-                response.authentication?.refreshToken || '', response.authentication?.expiresIn?.toString() || '');
-            
+    
+              const tokenIsValid = await sendTokenToBackend(response.authentication?.accessToken || '');
+    
+              if (tokenIsValid) {
+                const userId = generateAutoIncrementId();
+                await sendUserInfoToBackend(userId, userLogin.name, userLogin.email, userLogin.picture);
+    
+                await sendTokenToRedis(
+                  process.env.GOOGLE_CLIENT_ID?.toString() || '', 
+                  response.authentication?.accessToken || '', 
+                  response.authentication?.refreshToken || '', 
+                  response.authentication?.expiresIn?.toString() || ''
+                );
+              }
             } catch (e) {
               console.warn('ERROR', e);
               setTokenMessage('Failed to fetch user data');
