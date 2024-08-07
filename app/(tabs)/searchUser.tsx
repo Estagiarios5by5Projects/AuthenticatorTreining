@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'reac
 import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen = () => {
-  const [userId, setUserId] = useState('');
+  const [userEmail, setUserEmail] = useState('');  
   const [userMessage, setUserMessage] = useState('');
   const [userMessageColor, setUserMessageColor] = useState('black');
   const [user, setUser] = useState<{
@@ -14,7 +14,7 @@ const ProfileScreen = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await fetch(`https://localhost:7067/api/User/get-user?idUser=${userId}`, {
+      const response = await fetch(`https://localhost:7067/api/User/get-user?email=${userEmail}`, {
         method: 'GET',
       });
 
@@ -31,11 +31,11 @@ const ProfileScreen = () => {
         setUserMessageColor('green');
       } else {
         console.error('Failed to retrieve user info from backend');
+        const responseText = response.text();
         if (status == 400) {
-          const responseText = `Usuário não encontrado`;
           setUserMessage(`Falha ao recuperar informações do usuário: ${responseText}`);
         } else {
-          setUserMessage('Erro inesperado. Por favor, tente novamente.');
+          setUserMessage(`Falha ao recuperar informações do usuário: ${responseText}`);
         }
         setUserMessageColor('black');
         setUser(null);  
@@ -56,14 +56,14 @@ const ProfileScreen = () => {
       locations={[0.2, 0.5, 0.9]}
       style={styles.container}
     >
-      <Text style={styles.text}>Procurar dados de usuário por ID</Text>
+      <Text style={styles.text}>Procurar dados de usuário por e-mail</Text> 
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Digite o ID do usuário"
+          placeholder="Digite o e-mail do usuário" 
           placeholderTextColor="#888888"
-          value={userId}
-          onChangeText={setUserId}
+          value={userEmail} 
+          onChangeText={setUserEmail} 
           textAlign="center"
         />
       </View>
