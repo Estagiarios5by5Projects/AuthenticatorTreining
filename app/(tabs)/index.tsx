@@ -75,10 +75,12 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            IdUser: id,
-            name,
-            email,
-            ProfileImageUrl: picture,
+            user: {  
+              idUser: id,  
+              name,  
+              email,  
+              profileImageUrl: picture,  
+            }
           }),
         });
     
