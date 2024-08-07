@@ -5,7 +5,7 @@
   import { LinearGradient } from 'expo-linear-gradient';
 
   WebBrowser.maybeCompleteAuthSession();
-  let currentId = 0;  // Variável global para simular ID auto-incremental
+  let currentId = 0; 
 
   let stringURL = "https://localhost:7067/";
 
@@ -94,7 +94,7 @@
         } else {
           console.error('Failed to send user info to backend:', responseText);
           setUserMessage(`Falha ao enviar informações do usuário`);
-          setUserMessageColor('yellow');
+          setUserMessageColor('black');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -126,7 +126,7 @@
         } else {
           console.error('Failed to send user token to Redis:', responseText);
           setTokenRedisMessage(`Falha ao enviar token do usuário ao Redis`);
-          setTokenRedisCollor('yellow');
+          setTokenRedisCollor('black');
         }
       } catch (error) {
         console.error('Error:', error);
@@ -147,7 +147,7 @@
           case 'cancel':
             console.log("Authentication was canceled");
             setTokenMessage('Authentication was canceled');
-            setTokenMessageColor('yellow');
+            setTokenMessageColor('black');
             break;
           case 'success':
             console.log("Authentication succeeded");
@@ -292,14 +292,14 @@
     },
     messageContainer: {
       marginTop: 20,
-      width: '90%', 
+      width: '120%', 
       alignItems: 'center',
     },
     messageBox: {
       backgroundColor: '#dedcdc',   
       borderRadius: 10,
       padding: 15,
-      width: '200%',  
+      width: '100%', 
     },
     messageContent: {
       fontSize: 16,

@@ -1,34 +1,52 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const ProfileScreen = () => {
   const [userId, setUserId] = useState('');
   const [userMessage, setUserMessage] = useState('');
   const [userMessageColor, setUserMessageColor] = useState('black');
+  const [user, setUser] = useState<{
+    email: string;
+    name: string;
+    profileImageUrl: string;
+  } | null>(null);
 
   const handleSearch = async () => {
     try {
-      const response = await fetch(`https://localhost:7067/api/User/UserID/${userId}`, {
+      const response = await fetch(`https://localhost:7067/api/User/get-user?idUser=${userId}`, {
         method: 'GET',
       });
-  
+
+      const status = response.status;
+
       if (response.ok) {
         const data = await response.json();
-        console.log("User info received from backend:", data);
-        setUserMessage('Informações do usuário recebidas com sucesso!');
+        setUser({
+          email: data.email,
+          name: data.name,
+          profileImageUrl: data.profileImageUrl,  
+        });
+        setUserMessage('Informações do usuário recuperadas com sucesso!');
         setUserMessageColor('green');
       } else {
         console.error('Failed to retrieve user info from backend');
-        setUserMessage('Falha ao recuperar informações do usuário');
-        setUserMessageColor('yellow');
+        if (status == 400) {
+          const responseText = `Usuário não encontrado`;
+          setUserMessage(`Falha ao recuperar informações do usuário: ${responseText}`);
+        } else {
+          setUserMessage('Erro inesperado. Por favor, tente novamente.');
+        }
+        setUserMessageColor('black');
+        setUser(null);  
       }
     } catch (error) {
       console.error('Error:', error);
       setUserMessage('Erro ao recuperar informações do usuário');
       setUserMessageColor('red');
+      setUser(null); 
     }
-  };  
+  };
 
   return (
     <LinearGradient
@@ -52,8 +70,25 @@ const ProfileScreen = () => {
       <TouchableOpacity style={styles.button} onPress={handleSearch}>
         <Text style={styles.buttonText}>Pesquisar</Text>
       </TouchableOpacity>
-      {userMessage && (
-        <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
+
+      {userMessage !== '' && (
+        <View style={styles.messageContainer}>
+          <View style={styles.messageBox}>
+            <Text style={[styles.message, { color: userMessageColor }]}>{userMessage}</Text>
+          </View>
+        </View>
+      )}
+
+      {user && (
+        <View style={styles.userInfo}>
+          <Text style={styles.userTitle}>Informações do Usuário:</Text>
+          <Image
+            source={{ uri: user.profileImageUrl, width: 70, height: 70 }}
+            style={styles.userImage}
+          />
+          <Text style={styles.userName}>{user.name}</Text>
+          <Text style={styles.userEmail}>{user.email}</Text>
+        </View>
       )}
     </LinearGradient>
   );
@@ -64,49 +99,86 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212', 
-    padding: 16,
   },
   text: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff', 
+    color: '#ffffff',
     marginBottom: 20,
-    fontFamily: 'Roboto-Regular', 
+    fontFamily: 'Roboto-Regular',
   },
   inputContainer: {
-    width: '80%', 
+    width: '80%',
     marginBottom: 20,
     alignItems: 'center',
   },
   input: {
     height: 40,
     width: '100%',
-    borderColor: '#333333', 
+    borderColor: '#333333',
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     backgroundColor: '#ffffff',
     color: '#000000',
-    fontSize: 16, 
-    fontFamily: 'Roboto-Regular', 
+    fontSize: 16,
+    fontFamily: 'Roboto-Regular',
   },
   button: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    backgroundColor: '#03a9f4',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   buttonText: {
     color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
-    fontFamily: 'Roboto-Regular', 
+  },
+  messageContainer: {
+    marginTop: 20,
+    width: '90%',
+    alignItems: 'center',
+  },
+  messageBox: {
+    backgroundColor: '#dedcdc',
+    borderRadius: 10,
+    padding: 15,
+    width: '90%',
+    alignItems: 'center',
   },
   message: {
-    marginTop: 20,
     fontSize: 16,
-    fontFamily: 'Roboto-Regular', 
+    color: '#fff',
+  },
+  userInfo: {
+    marginTop: 30,
+    alignItems: 'center',
+  },
+  userTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 20,
+    fontFamily: 'Roboto-Regular',
+  },
+  userImage: {
+    borderRadius: 35,
+    marginBottom: 20,
+  },
+  userName: {
+    fontSize: 20,
+    color: '#ffffff',
+    marginBottom: 10,
+  },
+  userEmail: {
+    fontSize: 16,
+    color: '#b0bec5',
   },
 });
 
