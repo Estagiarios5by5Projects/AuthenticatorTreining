@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
+let stringURL = "https://localhost:7067/";
+
 const ProfileScreen = () => {
   const [userEmail, setUserEmail] = useState('');  
   const [userMessage, setUserMessage] = useState('');
@@ -14,7 +16,7 @@ const ProfileScreen = () => {
 
   const handleSearch = async () => {
     try {
-      const response = await fetch(`https://localhost:7067/api/User/get-user?email=${userEmail}`, {
+      const response = await fetch(`${stringURL}api/User/get-user?email=${userEmail}`, {
         method: 'GET',
       });
 

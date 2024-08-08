@@ -42,7 +42,7 @@ export default function HomeScreen() {
 
   const handleSearch = async (userEmail: string) => {
     try {
-      const response = await fetch(`https://localhost:7067/api/User/get-user?email=${userEmail}`, {
+      const response = await fetch(`${stringURL}api/User/get-user?email=${userEmail}`, {
         method: 'GET',
       });
 
